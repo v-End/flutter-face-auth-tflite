@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>454466880872-mvfsgf9rupb81biiiu43pau82l7kt782.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.454466880872-mvfsgf9rupb81biiiu43pau82l7kt782</string>
+	<key>API_KEY</key>
+	<string>AIzaSyD1x5nR9NBk2nN9dPAWkK6Rr4_RXF1v2Ws</string>
+	<key>GCM_SENDER_ID</key>
+	<string>454466880872</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.facialRecog1</string>
+	<key>PROJECT_ID</key>
+	<string>face-recog-kp</string>
+	<key>STORAGE_BUCKET</key>
+	<string>face-recog-kp.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:454466880872:ios:f7d68c6391fc0f376382dd</string>
+</dict>
+</plist>
