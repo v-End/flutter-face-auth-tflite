@@ -7,8 +7,9 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+
+import 'dart:typed_data';
 
 import 'cameraservice.dart';
 import 'database.dart';
@@ -49,8 +50,8 @@ class FaceDetectorPainter extends CustomPainter {
 
     final Paint paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..color = Colors.red;
+      ..strokeWidth = 4
+      ..color = Colors.blue;
 
     scaleX = size.width / absoluteImageSize.width;
     scaleY = size.height / absoluteImageSize.height;
@@ -65,13 +66,15 @@ class FaceDetectorPainter extends CustomPainter {
         paint);
 
     boxText.clear();
+    //boxText.add("Z : ${face?.headEulerAngleZ?.toStringAsFixed(3).toString()}");
+    //boxText.add("Y : ${face?.headEulerAngleY?.toStringAsFixed(3).toString()}");
+    //boxText.add("X : ${face?.headEulerAngleX?.toStringAsFixed(3).toString()}");
     boxText.add(
         "Right : ${face?.rightEyeOpenProbability?.toStringAsFixed(3).toString()}");
     boxText.add(
         "Left  : ${face?.leftEyeOpenProbability?.toStringAsFixed(3).toString()}");
     if (userDist != null) {
-      boxText
-          .add("Confidence: ${(1 - userDist!).toStringAsFixed(3).toString()}");
+      boxText.add("Difference: ${userDist!.toStringAsFixed(3).toString()}");
       if (userDist! < 0.5) {
         boxText.add(LocalDB.getUserName().toString());
       } else {
@@ -92,7 +95,10 @@ class FaceDetectorPainter extends CustomPainter {
           TextPainter(
             text: TextSpan(
               text: msgList[i] ?? "",
-              style: TextStyle(color: Colors.white, fontSize: fontSize),
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: fontSize,
+              ),
             ),
             textDirection: TextDirection.rtl,
           ),
@@ -117,7 +123,7 @@ class FaceDetectorPainter extends CustomPainter {
                 scaleY!),
       );
     }
-
+    /*
     void paintContour(FaceContourType type) {
       final faceContour = face!.contours[type];
       if (faceContour?.points != null) {
@@ -133,12 +139,12 @@ class FaceDetectorPainter extends CustomPainter {
       }
     }
 
-    //paintContour(FaceContourType.leftEye);
-    //paintContour(FaceContourType.rightEye);
-    //paintContour(FaceContourType.upperLipTop);
-    //paintContour(FaceContourType.upperLipBottom);
-    //paintContour(FaceContourType.lowerLipTop);
-    //paintContour(FaceContourType.lowerLipBottom);
+    paintContour(FaceContourType.face);
+    paintContour(FaceContourType.leftEyebrowTop);
+    paintContour(FaceContourType.leftEyebrowBottom);
+    paintContour(FaceContourType.leftEye);
+    paintContour(FaceContourType.noseBridge);
+    */
   }
 
   @override
@@ -208,12 +214,6 @@ class FaceDetectorService {
   Future<void> processInputImage(InputImage inputImage) async {
     _faces = await _faceDetector.processImage(inputImage);
   }
-
-  /*
-  Future<void> detectFaces(CameraImage cameraImage) async {
-    _inputImage = await _processCameraImage(cameraImage);
-  }
-  */
 
   dispose() {
     _faceDetector.close();

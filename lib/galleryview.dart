@@ -2,14 +2,16 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 import 'package:flutter/material.dart';
 
 import 'package:image_picker/image_picker.dart';
 
+import 'database.dart';
 import 'facedetector.dart';
 import 'servicelocator.dart';
+import 'mlservice.dart';
 
 class GalleryView extends StatefulWidget {
   const GalleryView({Key? key}) : super(key: key);
@@ -146,8 +148,12 @@ class GalleryImageViewState extends State<GalleryImageView> {
   bool _detectingFaces = false;
   final RegExp _regExp = RegExp(r'[^\\\/]+(?=\.[\w]+$)|[^\\\/]+$');
 
+  List faceResultList = [];
+  PredictedUserData? predUserData;
+
   final FaceDetectorService _faceDetectorService =
       serviceLocator<FaceDetectorService>();
+  final MLService _mlService = serviceLocator<MLService>();
 
   @override
   Widget build(BuildContext context) {
@@ -169,10 +175,57 @@ class GalleryImageViewState extends State<GalleryImageView> {
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 48),
                 alignment: Alignment.bottomCenter,
                 child: ElevatedButton(
+                  onPressed: _faceDetected != null
+                      ? () {
+                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                          faceResultList = _mlService.predictFaceFile(
+                              widget.path!, _faceDetected);
+                          predUserData =
+                              _mlService.findUsersFace(faceResultList);
+                          LocalDB.setUserDetails(
+                            User(
+                              name: LocalDB.getUserName().toString(),
+                              pass: LocalDB.getUserPass().toString(),
+                              key: faceResultList,
+                            ),
+                          );
+                          _snackBarWarning(message: "Face changed.");
+                        }
+                      : null,
+                  child: const Text('Change'),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 48),
+                alignment: Alignment.bottomCenter,
+                child: ElevatedButton(
+                  onPressed: _faceDetected != null
+                      ? () {
+                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                          faceResultList = _mlService.predictFaceFile(
+                              widget.path!, _faceDetected);
+                          predUserData =
+                              _mlService.findUsersFace(faceResultList);
+                          _getFaces(widget.inputImage);
+                          _snackBarWarning(message: "Face predicted.");
+                        }
+                      : null,
+                  child: const Text('Predict'),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 48),
+                alignment: Alignment.bottomCenter,
+                child: ElevatedButton(
                   child: const Text('Detect'),
-                  onPressed: () {
-                    _getFaces(widget.inputImage);
+                  onPressed: () async {
                     ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                    await _getFaces(widget.inputImage);
+                    if (_faceDetected != null) {
+                      _snackBarWarning(message: "Face detected.");
+                    } else {
+                      _snackBarWarning(message: "Face not found.");
+                    }
                   },
                 ),
               ),
@@ -189,6 +242,7 @@ class GalleryImageViewState extends State<GalleryImageView> {
             ? FaceDetectorPainter(
                 face: _faceDetected,
                 absoluteImageSize: _imageSize!,
+                userDist: predUserData?.userDistance,
               )
             : null);
   }
@@ -208,13 +262,11 @@ class GalleryImageViewState extends State<GalleryImageView> {
         if (_faceDetectorService.faces.isNotEmpty) {
           setState(() {
             _faceDetected = _faceDetectorService.faces.first;
-            _snackBarWarning(message: "Face detected.");
           });
         } else {
           setState(() {
             _faceDetected = null;
           });
-          _snackBarWarning(message: "Face detected.");
         }
 
         _detectingFaces = false;

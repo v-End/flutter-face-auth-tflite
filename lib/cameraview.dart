@@ -3,9 +3,7 @@ import 'dart:developer' as dev;
 import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
-import 'package:facial_recog1/homemenu.dart';
 
-import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 import 'package:flutter/material.dart';
@@ -13,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'cameraservice.dart';
 import 'database.dart';
 import 'facedetector.dart';
+import 'homemenu.dart';
 import 'servicelocator.dart';
 import 'mlservice.dart';
 
@@ -75,7 +74,7 @@ class CameraViewingState extends State<CameraViewing> {
     }
   }
 
-  _initCamera({CameraLensDirection camDir = CameraLensDirection.back}) async {
+  _initCamera({CameraLensDirection camDir = CameraLensDirection.front}) async {
     if (mounted) {
       setState(() => _initializing = true);
       await _cameraService.initialize(camDir: camDir);
@@ -141,13 +140,12 @@ class CameraViewingState extends State<CameraViewing> {
             faceResultList = _mlService.predictFace(image, _faceDetected);
             if (widget.username.isEmpty || widget.password.isEmpty) {
               predUserData = _mlService.findUsersFace(faceResultList);
-              dev.log("List: $predUserData");
             }
             _snackBarWarning(message: "Liveness test successful.");
           } else {
             _snackBarWarning(message: "Liveness test failed, try blinking.");
           }
-          dev.log("List: $faceResultList");
+          //dev.log("List: $faceResultList");
           _livenessChecking = false;
           dev.log("Value: $classValues");
         }
@@ -237,6 +235,7 @@ class CameraViewingState extends State<CameraViewing> {
                                 key: faceResultList,
                               ),
                             );
+                            Navigator.pop(context);
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(

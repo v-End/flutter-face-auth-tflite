@@ -7,7 +7,6 @@ import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 
-import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 import 'package:image/image.dart' as imglib;
@@ -90,16 +89,28 @@ class MLService {
     return _predictedArray;
   }
 
+  List predictFaceFile(String image, Face? face) {
+    if (face == null) throw Exception("No face detected");
+    List input = _preProcessFile(image, face);
+    input = input.reshape([1, 112, 112, 3]);
+
+    List output = List.generate(1, (index) => List.filled(192, 0));
+
+    interpreter.run(input, output);
+    output = output.reshape([192]);
+
+    _predictedArray = List.from(output);
+    return _predictedArray;
+  }
+
   PredictedUserData findUsersFace(List predictedData) {
     User? user = LocalDB.getUser();
-    double minDist = 999;
     double curDist = 0.0;
     User? predictedResult;
 
     curDist = euclideanDistance(user.key!, predictedData);
     dev.log("curDist: $curDist");
-    if (curDist <= threshold && curDist < minDist) {
-      minDist = curDist;
+    if (curDist <= threshold) {
       predictedResult = user;
       return PredictedUserData(
           predictedUser: predictedResult, userDistance: curDist);
@@ -123,8 +134,8 @@ class MLService {
         options: GpuDelegateOptionsV2(
           isPrecisionLossAllowed: false,
           inferencePreference: TfLiteGpuInferenceUsage.fastSingleAnswer,
-          inferencePriority1: TfLiteGpuInferencePriority.minLatency,
-          inferencePriority2: TfLiteGpuInferencePriority.auto,
+          inferencePriority1: TfLiteGpuInferencePriority.maxPrecision,
+          inferencePriority2: TfLiteGpuInferencePriority.minLatency,
           inferencePriority3: TfLiteGpuInferencePriority.auto,
         ),
       );
@@ -148,8 +159,26 @@ class MLService {
     return imageAsList;
   }
 
+  List _preProcessFile(String image, Face faceDetected) {
+    imglib.Image croppedImage = _cropFaceFile(image, faceDetected);
+    imglib.Image img = imglib.copyResizeCropSquare(croppedImage, 112);
+
+    Float32List imageAsList = _imageToByteListFloat32(img);
+    return imageAsList;
+  }
+
   imglib.Image _cropFace(CameraImage image, Face faceDetected) {
     imglib.Image convertedImage = _convertCameraImage(image);
+    double x = faceDetected.boundingBox.left - 10.0;
+    double y = faceDetected.boundingBox.top - 10.0;
+    double w = faceDetected.boundingBox.width + 10.0;
+    double h = faceDetected.boundingBox.height + 10.0;
+    return imglib.copyCrop(
+        convertedImage, x.round(), y.round(), w.round(), h.round());
+  }
+
+  imglib.Image _cropFaceFile(String image, Face faceDetected) {
+    imglib.Image convertedImage = _convertPathImage(image);
     double x = faceDetected.boundingBox.left - 10.0;
     double y = faceDetected.boundingBox.top - 10.0;
     double w = faceDetected.boundingBox.width + 10.0;
@@ -162,6 +191,11 @@ class MLService {
     var img = convertToImage(image);
     var img1 = imglib.copyRotate(img!, -90);
     return img1;
+  }
+
+  imglib.Image _convertPathImage(String image) {
+    var img = imglib.decodeImage(io.File(image).readAsBytesSync());
+    return img!;
   }
 
   Float32List _imageToByteListFloat32(imglib.Image image) {
