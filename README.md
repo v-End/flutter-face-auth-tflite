@@ -1,16 +1,13 @@
-# facial_recog1
+# Facial Recognition and Authentication
+Uses Flutter, written in Dart.
 
-A new Flutter project.
+Uses Google ML Kit for Face Detection.  
+https://developers.google.com/ml-kit/  
 
-## Getting Started
+Uses TensorFlow Lite for Face Recognition.  
+https://www.tensorflow.org/lite/
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Model used is based off MobileFaceNets and can be accessed in this repository:  
+https://github.com/sirius-ai/MobileFaceNet_TF  
+On TensorFlow model conversion:  
+https://www.tensorflow.org/lite/models/convert/convert_models
